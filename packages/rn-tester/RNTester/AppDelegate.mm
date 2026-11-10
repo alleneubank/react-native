@@ -7,6 +7,8 @@
 
 #import "AppDelegate.h"
 
+#import <React/RCTConstants.h>
+
 #if !TARGET_OS_TV
 #import <React/RCTPushNotificationManager.h>
 #import <UserNotifications/UserNotifications.h>
@@ -21,6 +23,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  RCTSetDispatchW3CPointerEvents(YES);
 #if !TARGET_OS_TV
   [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
 #endif

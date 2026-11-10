@@ -13,6 +13,8 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTDefines.h>
 #import <React/RCTLinkingManager.h>
+#import <React/RCTSurfacePointerHandler.h>
+#import <React/RCTViewManager.h>
 #import <ReactCommon/RCTSampleTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
 
@@ -30,6 +32,71 @@
 #endif
 
 static NSString *const kBundlePath = @"js/RNTesterApp.ios";
+
+@interface RNTPointerResetButton : UIButton
+@end
+
+@implementation RNTPointerResetButton
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+  if ((self = [super initWithFrame:frame])) {
+    UIButtonConfiguration *configuration = [UIButtonConfiguration plainButtonConfiguration];
+    configuration.title = @"Reset pointers";
+    self.configuration = configuration;
+    self.backgroundColor = UIColor.systemBackgroundColor;
+    self.isAccessibilityElement = YES;
+    self.accessibilityIdentifier = @"reset-pointer-handler";
+    self.accessibilityLabel = configuration.title;
+    [self addTarget:self action:@selector(resetPointers:event:) forControlEvents:UIControlEventTouchDown];
+  }
+  return self;
+}
+
+- (void)resetPointers:(UIButton *)sender event:(UIEvent *)event
+{
+  RCTSurfacePointerHandler *handler = nil;
+  for (UITouch *touch in event.allTouches) {
+    UIView *view = touch.view;
+    for (NSUInteger depth = 0; view != nil && depth < 64; depth++, view = view.superview) {
+      for (UIGestureRecognizer *recognizer in view.gestureRecognizers) {
+        if ([recognizer isKindOfClass:RCTSurfacePointerHandler.class]) {
+          handler = (RCTSurfacePointerHandler *)recognizer;
+          // Reset retires this contact; UIKit must not send its later move/up to the handler.
+          [handler ignoreTouch:touch forEvent:event];
+        }
+      }
+    }
+  }
+  if (handler != nil) {
+    [handler reset];
+  }
+  UIButtonConfiguration *configuration = sender.configuration;
+  configuration.title = handler != nil ? @"Reset performed" : @"No active pointer";
+  sender.configuration = configuration;
+  sender.accessibilityLabel = configuration.title;
+}
+
+@end
+
+@interface RNTPointerResetButtonManager : RCTViewManager
+@end
+
+@implementation RNTPointerResetButtonManager
+
+RCT_EXPORT_MODULE(RNTPointerResetButton)
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
+}
+
+- (UIView *)view
+{
+  return [[RNTPointerResetButton alloc] initWithFrame:CGRectZero];
+}
+
+@end
 
 @implementation SceneDelegate
 
