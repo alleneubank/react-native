@@ -39,7 +39,7 @@
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
     "metro": "^0.88.0",
-    "launch-editor": "^2.9.1",
+    "launch-editor": "^2.14.2",
     "open": "^8.4.2",
     "semver": "^7.1.3"
   },
